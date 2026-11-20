@@ -1,5 +1,7 @@
 # Reinforcement Learning for Battery Energy Arbitrage in Power Markets
 
+[![tests](https://github.com/ekahorsu/battery-arbitrage-reinforcement-learning/actions/workflows/tests.yml/badge.svg)](https://github.com/ekahorsu/battery-arbitrage-reinforcement-learning/actions/workflows/tests.yml)
+
 Tabular Q-learning and a Deep Q-Network, trained to operate a battery in a wholesale electricity market, with strict out-of-sample evaluation against random and rule-based baselines.
 
 ## Overview
@@ -32,6 +34,24 @@ The result is honest and informative. The random policy loses money, while the t
 
 The Deep Q-Network, using a continuous state instead of coarse bins, responds to finer price gradations and to the time of day, and edges ahead of the heuristic out-of-sample. The advantage is modest, and because neural-network training is stochastic the exact margin varies between runs, with the Deep Q-Network landing close to and around the heuristic from one run to the next. The broader point is that the additional machinery of deep reinforcement learning begins to pay off where the discretization of the tabular method costs it, while a well-tuned heuristic remains a strong baseline that is only narrowly surpassed. Recognizing that such baselines are hard to beat on simple problems, and reporting the comparison honestly under strict out-of-sample evaluation, matters more than the headline number itself.
 
+## Code structure and testing
+
+The environment, features, baselines and tabular Q-learning agent are also packaged as pure functions in `battery_arbitrage.py`, so they can be imported and unit tested. The test suite in `tests/` checks:
+
+- the battery environment (charge, discharge, hold, invalid actions, state-of-charge limits);
+- the chronological train/test split and that the rolling features never use future prices;
+- that the tuned rule-based and random baselines reproduce the published out-of-sample results ($1,778 and -$65);
+- that the Q-learning agent learns profitable arbitrage on a synthetic daily price cycle.
+
+Run the tests locally with:
+
+```bash
+pip install -r requirements-test.txt
+pytest -v
+```
+
+GitHub Actions runs the same suite on Python 3.10, 3.11 and 3.12 on every push and pull request.
+
 ## How to run
 
 ```bash
@@ -49,12 +69,16 @@ Tested with Python 3.10. No internet connection is required; the data is include
 - **pandas** for data handling and the rolling price context
 - **Matplotlib** for the learning curves and comparison plots
 - **TensorFlow / Keras** for the Deep Q-Network
+- **pytest** and **GitHub Actions** for unit testing and continuous integration
 
 ## Repository contents
 
 - `battery_arbitrage_rl.ipynb` - the full analysis notebook
 - `power_prices.csv` - the dataset (3,000 hourly observations: demand, hour, price)
 - `requirements.txt` - dependencies
+- `battery_arbitrage.py` - importable environment, features, baselines and Q-learning agent
+- `tests/` - pytest suite; `requirements-test.txt` - test dependencies
+- `.github/workflows/tests.yml` - continuous integration workflow
 
 ## Data source
 
